@@ -74,13 +74,21 @@ class ResizingIntSet
   end
 
   def insert(num)
-    count += 1
-    if !self.include?(num)
+    
+    unless self.include?(num)
+      resize! if count >= num_buckets
       self[num] << num
+      @count += 1
     end
+    
+    
   end
 
   def remove(num)
+    if self.include?(num)
+      self[num].delete(num)
+      @count -= 1
+    end
   end
 
   def include?(num)
@@ -90,7 +98,6 @@ class ResizingIntSet
   private
 
   def [](num)
-    # optional but useful; return the bucket corresponding to `num`
     @store[num % num_buckets] 
   end
 
@@ -99,8 +106,18 @@ class ResizingIntSet
   end
 
   def resize!
-    if @count == num_buckets
-      @store = Array.new(@count * 2) { Array.new }
+    temp = []
+    @store.each do |bucket|
+     bucket.length.times do
+      temp << bucket.shift
+     end
     end
+   
+    @store += Array.new(num_buckets) {[]}
+    @count = 0 
+    temp.each do |ele|
+      self.insert(ele)
+    end
+    
   end
 end
